@@ -2,6 +2,13 @@ import { useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useToast } from '@/hooks/use-toast';
 
+export type NotificationType = 'assignment' | 'announcement' | 'grade';
+export interface Notification {
+  type: NotificationType;
+  title: string;
+  message: string;
+}
+
 let socket: Socket | null = null;
 
 export function useNotifications(courseId?: number) {
@@ -82,11 +89,7 @@ export function useNotifications(courseId?: number) {
     }
   }, [courseId, toast]);
 
-  const sendNotification = useCallback((notification: {
-    type: 'assignment' | 'announcement' | 'grade';
-    title: string;
-    message: string;
-  }) => {
+  const sendNotification = useCallback((notification: Notification) => {
     if (socket && courseId) {
       socket.emit('notify', { ...notification, courseId });
     }
