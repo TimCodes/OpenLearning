@@ -2,9 +2,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Assignment } from "@db/schema";
 
 export function useAssignments(courseId: number) {
-  return useQuery<Assignment[]>({
+  const { data: assignments, isLoading, error } = useQuery<Assignment[]>({
     queryKey: [`/api/courses/${courseId}/assignments`],
   });
+
+  return {
+    assignments,
+    isLoading,
+    error
+  };
 }
 
 export function useAssignment(id: number) {

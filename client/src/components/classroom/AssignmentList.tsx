@@ -62,23 +62,25 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
 
       <div className="space-y-4">
         {assignments?.map((assignment) => (
-          <Link key={assignment.id} href={`/assignment/${assignment.id}`}>
-            <a className="block">
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">{assignment.title}</CardTitle>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Due {assignment.dueDate ? format(new Date(assignment.dueDate), "PPP") : "No due date"}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {assignment.description || "No description provided"}
-                  </p>
-                </CardContent>
-              </Card>
-            </a>
+          <Link 
+            key={assignment.id} 
+            href={`/assignment/${assignment.id}`}
+            className="block"
+          >
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardHeader>
+                <CardTitle className="text-lg">{assignment.title}</CardTitle>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Due {assignment.dueDate ? format(new Date(assignment.dueDate), "PPP") : "No due date"}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {assignment.description || "No description provided"}
+                </p>
+              </CardContent>
+            </Card>
           </Link>
         ))}
 

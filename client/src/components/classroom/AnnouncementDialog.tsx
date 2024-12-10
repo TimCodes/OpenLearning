@@ -38,6 +38,7 @@ export default function AnnouncementDialog({
 }: AnnouncementDialogProps) {
   const { course } = useCourse(courseId);
   const { sendNotification } = useNotifications(courseId);
+  const { toast } = useToast();
   
   const form = useForm({
     resolver: zodResolver(announcementSchema),
