@@ -43,7 +43,11 @@ export default function CreateCourseDialog({
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: async (data: typeof form.getValues) => {
+    mutationFn: async (data: {
+      name: string;
+      section: string;
+      description: string;
+    }) => {
       const response = await fetch("/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,7 +56,8 @@ export default function CreateCourseDialog({
       });
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to create course');
       }
 
       return response.json();
@@ -60,6 +65,7 @@ export default function CreateCourseDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/courses"] });
       onOpenChange(false);
+      form.reset();
       toast({
         title: "Course created",
         description: "Your new course has been created successfully.",
@@ -74,8 +80,12 @@ export default function CreateCourseDialog({
     },
   });
 
-  const onSubmit = form.handleSubmit((data) => {
-    createMutation.mutate(data);
+  const onSubmit = form.handleSubmit(async (data) => {
+    try {
+      await createMutation.mutateAsync(data);
+    } catch (error) {
+      // Error is handled by the mutation's onError callback
+    }
   });
 
   return (
