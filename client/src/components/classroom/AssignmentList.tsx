@@ -5,6 +5,7 @@ import { Calendar, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useUser } from "@/hooks/use-user";
+import { useNotifications } from "@/hooks/use-notifications";
 
 interface AssignmentListProps {
   courseId: number;
@@ -13,6 +14,7 @@ interface AssignmentListProps {
 export default function AssignmentList({ courseId }: AssignmentListProps) {
   const { assignments, isLoading } = useAssignments(courseId);
   const { user } = useUser();
+  const { sendNotification } = useNotifications(courseId);
 
   if (isLoading) {
     return (

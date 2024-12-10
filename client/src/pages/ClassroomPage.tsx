@@ -5,11 +5,15 @@ import AssignmentList from "@/components/classroom/AssignmentList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Users } from "lucide-react";
+import { useNotifications } from "@/hooks/use-notifications";
 
 export default function ClassroomPage() {
   const [, params] = useRoute("/course/:id");
   const courseId = parseInt(params?.id || "0");
   const { course, isLoading } = useCourse(courseId);
+  
+  // Subscribe to course notifications
+  useNotifications(courseId);
 
   if (isLoading) {
     return (

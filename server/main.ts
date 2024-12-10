@@ -18,8 +18,13 @@ async function bootstrap() {
     }),
   };
 
+  // Enable CORS with credentials
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+  
   if (process.env.NODE_ENV === 'production') {
-    app.enableCors();
     sessionSettings.cookie = {
       secure: true,
     };
