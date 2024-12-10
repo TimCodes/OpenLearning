@@ -197,7 +197,7 @@ export default function AuthPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full" loading={registerForm.formState.isSubmitting}>
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" loading={registerForm.formState.isSubmitting}>
                   Register
                 </Button>
               </form>
