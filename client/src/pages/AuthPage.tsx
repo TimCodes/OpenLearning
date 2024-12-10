@@ -123,7 +123,7 @@ export default function AuthPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full bg-green-500 hover:bg-green-600" loading={loginForm.formState.isSubmitting}>
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" loading={loginForm.formState.isSubmitting}>
                   Login
                 </Button>
               </form>
