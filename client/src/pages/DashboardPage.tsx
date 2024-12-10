@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Navigation from "@/components/classroom/Navigation";
 import { useCourses } from "@/hooks/use-courses";
 import { useUser } from "@/hooks/use-user";
 import CourseCard from "@/components/classroom/CourseCard";
@@ -14,9 +15,10 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <header className="border-b">
         <div className="container py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Classroom</h1>
+          <h1 className="text-2xl font-semibold">Your Classes</h1>
           {user?.role === "teacher" && (
             <Button onClick={() => setShowCreateDialog(true)}>
               <Plus className="mr-2 h-4 w-4" />

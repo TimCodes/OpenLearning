@@ -1,5 +1,6 @@
 import { useRoute } from "wouter";
 import { useAssignment } from "@/hooks/use-assignments";
+import Navigation from "@/components/classroom/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock } from "lucide-react";
@@ -34,6 +35,7 @@ export default function AssignmentPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <header className="border-b">
         <div className="container py-4">
           <h1 className="text-2xl font-semibold">{assignment.title}</h1>

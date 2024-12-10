@@ -1,6 +1,7 @@
 import { useRoute } from "wouter";
 import { useCourse } from "@/hooks/use-courses";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Navigation from "@/components/classroom/Navigation";
 import AssignmentList from "@/components/classroom/AssignmentList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -29,6 +30,7 @@ export default function ClassroomPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Navigation />
       <header className="bg-primary text-primary-foreground">
         <div className="container py-8">
           <h1 className="text-3xl font-bold">{course.name}</h1>
