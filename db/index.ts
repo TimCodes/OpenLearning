@@ -8,8 +8,18 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const db = drizzle({
-  connection: process.env.DATABASE_URL,
-  schema,
-  ws: ws,
-});
+let _db: ReturnType<typeof drizzle>;
+
+try {
+  _db = drizzle({
+    connection: process.env.DATABASE_URL,
+    schema,
+    ws: ws,
+  });
+  console.log('Database connection established successfully');
+} catch (error) {
+  console.error('Failed to connect to database:', error);
+  process.exit(1);
+}
+
+export const db = _db;

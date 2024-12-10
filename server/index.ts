@@ -8,8 +8,13 @@ const app = express();
 const server = createServer(app);
 
 // Setup WebSocket notifications
-const io = setupNotifications(app, server);
-app.set('io', io); // Make io available to routes
+try {
+  const io = setupNotifications(app, server);
+  app.set('io', io); // Make io available to routes
+} catch (error) {
+  console.error('Failed to setup WebSocket notifications:', error);
+  // Continue without WebSocket if setup fails
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

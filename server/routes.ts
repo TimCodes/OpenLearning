@@ -11,7 +11,7 @@ export function registerRoutes(app: Express): void {
 
   // Courses
   app.get("/api/courses", async (req, res) => {
-    const userCourses = await db.query.courses.findMany({
+    const userCourses = await db.query[courses.name].findMany({
       where: req.user?.role === "teacher" 
         ? eq(courses.teacherId, req.user.id)
         : undefined,
@@ -23,7 +23,7 @@ export function registerRoutes(app: Express): void {
   });
 
   app.get("/api/courses/:id", async (req, res) => {
-    const course = await db.query.courses.findFirst({
+    const course = await db.query[courses.name].findFirst({
       where: eq(courses.id, parseInt(req.params.id)),
       with: {
         teacher: true,
@@ -62,16 +62,32 @@ export function registerRoutes(app: Express): void {
     }
 
     const courseId = parseInt(req.params.courseId);
+    const { dueDate, ...rest } = req.body;
+    
+    // Parse the date string from the datetime-local input
+    let parsedDate = null;
+    if (dueDate) {
+      try {
+        parsedDate = new Date(dueDate);
+        if (isNaN(parsedDate.getTime())) {
+          return res.status(400).send("Invalid date format");
+        }
+      } catch (error) {
+        return res.status(400).send("Invalid date format");
+      }
+    }
+    
     const [assignment] = await db.insert(assignments).values({
-      ...req.body,
+      ...rest,
       courseId,
+      dueDate: parsedDate,
     }).returning();
 
     res.json(assignment);
   });
 
   app.get("/api/courses/:courseId/assignments", async (req, res) => {
-    const courseAssignments = await db.query.assignments.findMany({
+    const courseAssignments = await db.query[assignments.name].findMany({
       where: eq(assignments.courseId, parseInt(req.params.courseId)),
       with: {
         submissions: {
@@ -88,7 +104,7 @@ export function registerRoutes(app: Express): void {
   });
 
   app.get("/api/assignments/:id", async (req, res) => {
-    const assignment = await db.query.assignments.findFirst({
+    const assignment = await db.query[assignments.name].findFirst({
       where: eq(assignments.id, parseInt(req.params.id)),
       with: {
         course: true,
@@ -142,7 +158,7 @@ export function registerRoutes(app: Express): void {
     }
 
     // Get course information for the notification
-    const assignment = await db.query.assignments.findFirst({
+    const assignment = await db.query[assignments.name].findFirst({
       where: eq(assignments.id, parseInt(req.params.id)),
       with: {
         course: true,

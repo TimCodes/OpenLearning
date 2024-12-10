@@ -61,7 +61,7 @@ export default function CreateAssignmentDialog({
       // Transform the date before sending to the API
       const formattedData = {
         ...data,
-        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+        dueDate: data.dueDate ? data.dueDate : null,
       };
 
       const response = await fetch(`/api/courses/${courseId}/assignments`, {
