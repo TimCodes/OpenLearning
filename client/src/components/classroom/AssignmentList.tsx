@@ -12,9 +12,12 @@ interface AssignmentListProps {
 }
 
 export default function AssignmentList({ courseId }: AssignmentListProps) {
-  const { assignments, isLoading } = useAssignments(courseId);
+  const { assignments, isLoading: assignmentsLoading } = useAssignments(courseId);
+  const { course, isLoading: courseLoading } = useCourse(courseId);
   const { user } = useUser();
   const { sendNotification } = useNotifications(courseId);
+
+  const isLoading = assignmentsLoading || courseLoading;
 
   if (isLoading) {
     return (
@@ -30,11 +33,13 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
         <div className="flex justify-end">
           <Button onClick={() => {
             // TODO: Add create assignment dialog
-            sendNotification({
-              type: 'assignment',
-              title: 'New Assignment Created',
-              message: `A new assignment has been added to ${course.name}`,
-            });
+            if (course) {
+              sendNotification({
+                type: 'assignment',
+                title: 'New Assignment Created',
+                message: `A new assignment has been added to ${course.name}`,
+              });
+            }
           }}>
             <Plus className="mr-2 h-4 w-4" />
             Create Assignment
