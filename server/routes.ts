@@ -3,30 +3,53 @@ import { createServer } from "http";
 import { setupAuth } from "./auth";
 import { setupNotifications } from "./notifications/notifications.gateway";
 import { db } from "../db";
-import { courses, assignments, submissions } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { courses, assignments, submissions, users, enrollments } from "@db/schema";
+import { eq, and } from "drizzle-orm";
 
 export function registerRoutes(app: Express): void {
   setupAuth(app);
 
   // Courses
   app.get("/api/courses", async (req, res) => {
-    const userCourses = await db.select().from(courses).where(
+    const userCourses = await db.select({
+      id: courses.id,
+      name: courses.name,
+      description: courses.description,
+      section: courses.section,
+      teacherId: courses.teacherId,
+      createdAt: courses.createdAt,
+      teacher: users
+    })
+    .from(courses)
+    .where(
       req.user?.role === "teacher" 
         ? eq(courses.teacherId, req.user.id)
         : undefined
-    ).leftJoin(users, eq(courses.teacherId, users.id));
+    )
+    .leftJoin(users, eq(courses.teacherId, users.id));
     res.json(userCourses);
   });
 
   app.get("/api/courses/:id", async (req, res) => {
-    const [course] = await db.select()
-      .from(courses)
-      .where(eq(courses.id, parseInt(req.params.id)))
-      .leftJoin(users, eq(courses.teacherId, users.id))
-      .leftJoin(enrollments, eq(courses.id, enrollments.courseId))
-      .leftJoin(users, eq(enrollments.studentId, users.id))
-      .limit(1);
+    const [course] = await db.select({
+      course: {
+        id: courses.id,
+        name: courses.name,
+        description: courses.description,
+        section: courses.section,
+        teacherId: courses.teacherId,
+        createdAt: courses.createdAt
+      },
+      teacher: {
+        id: users.id,
+        name: users.name,
+        role: users.role
+      }
+    })
+    .from(courses)
+    .where(eq(courses.id, parseInt(req.params.id)))
+    .leftJoin(users, eq(courses.teacherId, users.id))
+    .limit(1);
     
     if (!course) {
       return res.status(404).send("Course not found");
@@ -97,20 +120,41 @@ export function registerRoutes(app: Express): void {
   });
 
   app.get("/api/assignments/:id", async (req, res) => {
-    const assignment = await db.query[assignments.name].findFirst({
-      where: eq(assignments.id, parseInt(req.params.id)),
-      with: {
-        course: true,
-        submissions: {
-          with: {
-            student: true,
-          },
-          where: req.user?.role === "student" 
-            ? eq(submissions.studentId, req.user.id)
-            : undefined,
-        },
+    const [assignment] = await db.select({
+      assignment: {
+        id: assignments.id,
+        title: assignments.title,
+        description: assignments.description,
+        dueDate: assignments.dueDate,
+        courseId: assignments.courseId,
+        points: assignments.points,
+        createdAt: assignments.createdAt
       },
-    });
+      submissions: {
+        id: submissions.id,
+        content: submissions.content,
+        submittedAt: submissions.submittedAt,
+        grade: submissions.grade,
+        feedback: submissions.feedback,
+        student: {
+          id: users.id,
+          name: users.name
+        }
+      }
+    })
+    .from(assignments)
+    .where(eq(assignments.id, parseInt(req.params.id)))
+    .leftJoin(
+      submissions,
+      and(
+        eq(assignments.id, submissions.assignmentId),
+        req.user?.role === "student"
+          ? eq(submissions.studentId, req.user.id)
+          : undefined
+      )
+    )
+    .leftJoin(users, eq(submissions.studentId, users.id))
+    .limit(1);
     
     if (!assignment) {
       return res.status(404).send("Assignment not found");
