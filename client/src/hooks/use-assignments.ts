@@ -34,9 +34,30 @@ export function useAssignment(id: number) {
     },
   });
 
+  const gradeMutation = useMutation({
+    mutationFn: async (data: { submissionId: number; grade: number }) => {
+      const response = await fetch(`/api/assignments/${id}/grade`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/assignments/${id}`] });
+    },
+  });
+
   return {
     assignment,
     ...rest,
     submit: submitMutation.mutateAsync,
+    grade: gradeMutation.mutateAsync,
   };
 }

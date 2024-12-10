@@ -97,6 +97,45 @@ export function registerRoutes(app: Express) {
     res.json(submission[0]);
   });
 
+  app.post("/api/assignments/:id/grade", async (req, res) => {
+    if (!req.user || req.user.role !== "teacher") {
+      return res.status(403).send("Only teachers can grade assignments");
+    }
+
+    const { submissionId, grade } = req.body;
+    
+    const [updatedSubmission] = await db
+      .update(submissions)
+      .set({ grade })
+      .where(eq(submissions.id, submissionId))
+      .returning();
+
+    if (!updatedSubmission) {
+      return res.status(404).send("Submission not found");
+    }
+
+    // Get course information for the notification
+    const assignment = await db.query.assignments.findFirst({
+      where: eq(assignments.id, parseInt(req.params.id)),
+      with: {
+        course: true,
+      },
+    });
+
+    if (assignment) {
+      const io = req.app.get('io');
+      io.emit('notify', {
+        type: 'grade',
+        title: 'Grade Posted',
+        message: `Your grade for ${assignment.title} has been posted`,
+        courseId: assignment.courseId,
+        studentId: updatedSubmission.studentId,
+      });
+    }
+
+    res.json(updatedSubmission);
+  });
+
   const httpServer = createServer(app);
   
   // Setup WebSocket notifications

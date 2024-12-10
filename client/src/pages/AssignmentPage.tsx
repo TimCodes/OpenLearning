@@ -12,9 +12,23 @@ import { useUser } from "@/hooks/use-user";
 export default function AssignmentPage() {
   const [, params] = useRoute("/assignment/:id");
   const assignmentId = parseInt(params?.id || "0");
-  const { assignment, isLoading, submit } = useAssignment(assignmentId);
+  const { assignment, isLoading, submit, grade } = useAssignment(assignmentId);
   const { user } = useUser();
   const [submission, setSubmission] = useState("");
+  const { sendNotification } = useNotifications(assignment?.courseId);
+
+  const handleGrade = async (submissionId: number, grade: number) => {
+    try {
+      await grade({ submissionId, grade });
+      sendNotification({
+        type: 'grade',
+        title: 'Grade Posted',
+        message: `A grade has been posted for ${assignment?.title}`,
+      });
+    } catch (error) {
+      console.error('Failed to save grade:', error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -65,7 +79,7 @@ export default function AssignmentPage() {
             </CardContent>
           </Card>
 
-          {user?.role === "student" && (
+          {user?.role === "student" ? (
             <Card>
               <CardHeader>
                 <CardTitle>Your Work</CardTitle>
@@ -80,6 +94,42 @@ export default function AssignmentPage() {
                 <Button onClick={handleSubmit} className="mt-4">
                   Turn In
                 </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Student Submissions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {assignment.submissions?.map((submission) => (
+                  <div key={submission.id} className="border-b py-4 last:border-0">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{submission.student.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Submitted {format(new Date(submission.submittedAt), "PPp")}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            placeholder="Grade"
+                            className="w-20"
+                            value={submission.grade || ""}
+                            onChange={(e) => handleGrade(submission.id, parseInt(e.target.value))}
+                          />
+                          <span className="text-sm text-muted-foreground">/ {assignment.points}</span>
+                        </div>
+                        <Button onClick={() => handleSaveGrade(submission)} variant="outline" size="sm">
+                          Save Grade
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-sm">{submission.content}</p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           )}
