@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertUserSchema } from "@db/schema";
+import { z } from "zod";
 import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -28,7 +28,12 @@ export default function AuthPage() {
   const { login, register: signup } = useUser();
 
   const loginForm = useForm({
-    resolver: zodResolver(insertUserSchema.pick({ username: true, password: true })),
+    resolver: zodResolver(
+      z.object({
+        username: z.string().min(1, "Username is required"),
+        password: z.string().min(1, "Password is required"),
+      })
+    ),
     defaultValues: {
       username: "",
       password: "",
@@ -36,7 +41,14 @@ export default function AuthPage() {
   });
 
   const registerForm = useForm({
-    resolver: zodResolver(insertUserSchema),
+    resolver: zodResolver(
+      z.object({
+        username: z.string().min(1, "Username is required"),
+        password: z.string().min(6, "Password must be at least 6 characters"),
+        name: z.string().min(1, "Full name is required"),
+        role: z.enum(["student", "teacher"] as const),
+      })
+    ),
     defaultValues: {
       username: "",
       password: "",
@@ -123,8 +135,12 @@ export default function AuthPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" loading={loginForm.formState.isSubmitting}>
-                  Login
+                <Button 
+                  type="submit" 
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={loginForm.formState.isSubmitting}
+                >
+                  {loginForm.formState.isSubmitting ? "Logging in..." : "Login"}
                 </Button>
               </form>
             </Form>
@@ -197,8 +213,12 @@ export default function AuthPage() {
                   )}
                 />
 
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" loading={registerForm.formState.isSubmitting}>
-                  Register
+                <Button 
+                  type="submit" 
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={registerForm.formState.isSubmitting}
+                >
+                  {registerForm.formState.isSubmitting ? "Registering..." : "Register"}
                 </Button>
               </form>
             </Form>
