@@ -22,15 +22,17 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
-const createAssignmentSchema = insertAssignmentSchema.pick({
-  title: true,
-  description: true,
-  dueDate: true,
-  points: true,
-}).transform((data) => ({
-  ...data,
-  dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
-}));
+// Define a custom schema for the form that handles date transformation
+const createAssignmentSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  dueDate: z.string().transform((val) => {
+    if (!val) return null;
+    const date = new Date(val);
+    return isNaN(date.getTime()) ? null : date.toISOString();
+  }),
+  points: z.number().min(0, "Points must be a positive number"),
+});
 
 type FormData = z.infer<typeof createAssignmentSchema>;
 
@@ -63,7 +65,10 @@ export default function CreateAssignmentDialog({
       const response = await fetch(`/api/courses/${courseId}/assignments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        }),
         credentials: "include",
       });
 
@@ -133,7 +138,7 @@ export default function CreateAssignmentDialog({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -143,17 +148,15 @@ export default function CreateAssignmentDialog({
             <FormField
               control={form.control}
               name="dueDate"
-              render={({ field }) => (
+              render={({ field: { value, onChange, ...field } }) => (
                 <FormItem>
                   <FormLabel>Due Date</FormLabel>
                   <FormControl>
                     <Input 
-                      type="datetime-local" 
+                      type="datetime-local"
+                      value={value || ''}
+                      onChange={(e) => onChange(e.target.value)}
                       {...field}
-                      onChange={(e) => {
-                        const date = e.target.value;
-                        field.onChange(date || null);
-                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -169,9 +172,9 @@ export default function CreateAssignmentDialog({
                   <FormLabel>Points</FormLabel>
                   <FormControl>
                     <Input 
-                      type="number" 
-                      {...field} 
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      type="number"
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
                   <FormMessage />
