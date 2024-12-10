@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,18 +22,12 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
-// Define a custom schema for the form that handles date transformation
+// Schema for form validation
 const createAssignmentSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  dueDate: z.string().transform(val => {
-    if (!val) return null;
-    const date = new Date(val);
-    // Validate the date is valid
-    if (isNaN(date.getTime())) return null;
-    return date;
-  }),
-  points: z.number().min(0, "Points must be a positive number"),
+  dueDate: z.string().optional(),
+  points: z.coerce.number().min(0, "Points must be a positive number"),
 });
 
 type FormData = z.infer<typeof createAssignmentSchema>;
@@ -63,14 +58,16 @@ export default function CreateAssignmentDialog({
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      // Transform the date before sending to the API
+      const formattedData = {
+        ...data,
+        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+      };
+
       const response = await fetch(`/api/courses/${courseId}/assignments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          // Send the date as an ISO string to the server
-          dueDate: data.dueDate instanceof Date ? data.dueDate.toISOString() : null,
-        }),
+        body: JSON.stringify(formattedData),
         credentials: "include",
       });
 
@@ -99,26 +96,27 @@ export default function CreateAssignmentDialog({
     },
   });
 
-  const onSubmit = form.handleSubmit(async (data) => {
+  const onSubmit = async (data: FormData) => {
     try {
       await createMutation.mutateAsync(data);
     } catch (error) {
       // Error is handled by the mutation's onError callback
+      console.error('Failed to create assignment:', error);
     }
-  });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create a new assignment</DialogTitle>
-          <p className="text-sm text-muted-foreground">
+          <DialogDescription>
             Fill in the details below to create a new assignment.
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -150,15 +148,14 @@ export default function CreateAssignmentDialog({
             <FormField
               control={form.control}
               name="dueDate"
-              render={({ field: { value, onChange, ...field } }) => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Due Date</FormLabel>
                   <FormControl>
                     <Input 
                       type="datetime-local"
                       {...field}
-                      value={value || ''}
-                      onChange={(e) => onChange(e.target.value)}
+                      value={field.value || ''}
                     />
                   </FormControl>
                   <FormMessage />
