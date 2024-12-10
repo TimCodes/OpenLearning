@@ -83,6 +83,9 @@ export default function CreateCourseDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create a new class</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Fill in the details below to create a new classroom.
+          </p>
         </DialogHeader>
 
         <Form {...form}>
@@ -137,8 +140,21 @@ export default function CreateCourseDialog({
               >
                 Cancel
               </Button>
-              <Button type="submit" loading={createMutation.isPending}>
-                Create
+              <Button 
+                type="submit" 
+                disabled={createMutation.isPending}
+                className="relative"
+              >
+                {createMutation.isPending ? (
+                  <>
+                    <span className="opacity-0">Create</span>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-4 w-4 border-2 border-current border-t-transparent animate-spin rounded-full" />
+                    </div>
+                  </>
+                ) : (
+                  "Create"
+                )}
               </Button>
             </div>
           </form>

@@ -20,7 +20,10 @@ export default function DashboardPage() {
         <div className="container py-4 flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Your Classes</h1>
           {user?.role === "teacher" && (
-            <Button onClick={() => setShowCreateDialog(true)}>
+            <Button 
+              onClick={() => setShowCreateDialog(true)}
+              className="bg-primary hover:bg-primary/90"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Create Class
             </Button>
