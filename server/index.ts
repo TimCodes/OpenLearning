@@ -1,8 +1,16 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
+import { createServer } from "http";
 import { setupVite, serveStatic, log } from "./vite";
+import { setupNotifications } from "./notifications/notifications.gateway";
+import { registerRoutes } from "./routes";
 
 const app = express();
+const server = createServer(app);
+
+// Setup WebSocket notifications
+const io = setupNotifications(app, server);
+app.set('io', io); // Make io available to routes
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -37,7 +45,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = registerRoutes(app);
+  // Register routes after setting up WebSocket
+  registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

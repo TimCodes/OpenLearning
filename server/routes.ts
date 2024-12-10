@@ -6,7 +6,7 @@ import { db } from "../db";
 import { courses, assignments, submissions } from "@db/schema";
 import { eq } from "drizzle-orm";
 
-export function registerRoutes(app: Express) {
+export function registerRoutes(app: Express): void {
   setupAuth(app);
 
   // Courses
@@ -146,10 +146,5 @@ export function registerRoutes(app: Express) {
     res.json(updatedSubmission);
   });
 
-  const httpServer = createServer(app);
-  
-  // Setup WebSocket notifications
-  setupNotifications(app, httpServer);
-  
-  return httpServer;
+  // Routes registered successfully
 }
