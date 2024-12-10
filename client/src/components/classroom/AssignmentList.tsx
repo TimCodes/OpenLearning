@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { Link } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useCourse } from "@/hooks/use-courses";
 
 interface AssignmentListProps {
   courseId: number;
