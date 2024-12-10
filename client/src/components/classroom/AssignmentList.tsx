@@ -9,6 +9,7 @@ import { useNotifications } from "@/hooks/use-notifications";
 import { useCourse } from "@/hooks/use-courses";
 import { useToast } from "@/hooks/use-toast";
 import CreateAssignmentDialog from "./CreateAssignmentDialog";
+import { useState } from "react";
 
 interface AssignmentListProps {
   courseId: number;
@@ -18,9 +19,6 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
   const { assignments, isLoading: assignmentsLoading } = useAssignments(courseId);
   const { course, isLoading: courseLoading } = useCourse(courseId);
   const { user } = useUser();
-  const { sendNotification } = useNotifications(courseId);
-  const { toast } = useToast();
-
   const isLoading = assignmentsLoading || courseLoading;
 
   if (isLoading) {
