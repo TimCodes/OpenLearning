@@ -6,11 +6,13 @@ const clients = new Map<string, Set<number>>();
 
 export function setupNotifications(app: Express, server: ReturnType<typeof createServer>) {
   const io = new Server(server, {
-    path: '/notifications',
     cors: {
-      origin: true,
+      origin: "*",
+      methods: ["GET", "POST"],
       credentials: true
-    }
+    },
+    path: "/socket.io/",
+    transports: ["websocket", "polling"]
   });
 
   io.on('connection', (socket) => {

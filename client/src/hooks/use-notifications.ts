@@ -10,11 +10,13 @@ export function useNotifications(courseId?: number) {
   // Initialize socket connection
   useEffect(() => {
     if (!socket) {
-      socket = io('/notifications', {
+      socket = io({
+        path: "/socket.io/",
         withCredentials: true,
-        transports: ['websocket'],
+        transports: ["websocket", "polling"],
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
+        autoConnect: true
       });
 
       socket.on('connect', () => {
