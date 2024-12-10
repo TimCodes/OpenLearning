@@ -5,8 +5,12 @@ import Navigation from "@/components/classroom/Navigation";
 import AssignmentList from "@/components/classroom/AssignmentList";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Users } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useUser } from "@/hooks/use-user";
+import { useState } from "react";
+import AnnouncementDialog from "@/components/classroom/AnnouncementDialog";
 
 export default function ClassroomPage() {
   const [, params] = useRoute("/course/:id");
@@ -28,13 +32,28 @@ export default function ClassroomPage() {
     return <div>Course not found</div>;
   }
 
+  const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
+  const { user } = useUser();
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <header className="bg-primary text-primary-foreground">
         <div className="container py-8">
-          <h1 className="text-3xl font-bold">{course.name}</h1>
-          <p className="mt-2 text-primary-foreground/80">{course.section}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">{course.name}</h1>
+              <p className="mt-2 text-primary-foreground/80">{course.section}</p>
+            </div>
+            {user?.role === "teacher" && (
+              <Button 
+                variant="secondary"
+                onClick={() => setShowAnnouncementDialog(true)}
+              >
+                Make Announcement
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -98,6 +117,12 @@ export default function ClassroomPage() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <AnnouncementDialog
+        courseId={courseId}
+        open={showAnnouncementDialog}
+        onOpenChange={setShowAnnouncementDialog}
+      />
     </div>
   );
 }
