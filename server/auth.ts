@@ -6,6 +6,7 @@ import createMemoryStore from "memorystore";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { users, insertUserSchema, type User as SelectUser } from "@db/schema";
+import { z } from "zod";
 import { db } from "../db";
 import { eq } from "drizzle-orm";
 
@@ -68,11 +69,11 @@ export function setupAuth(app: Express) {
           .limit(1);
 
         if (!user) {
-          return done(null, false, { message: "Incorrect username." });
+          return done(null, false, { message: "Invalid username or password" });
         }
         const isMatch = await crypto.compare(password, user.password);
         if (!isMatch) {
-          return done(null, false, { message: "Incorrect password." });
+          return done(null, false, { message: "Invalid username or password" });
         }
         return done(null, user);
       } catch (err) {
@@ -150,11 +151,16 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    const result = insertUserSchema.safeParse(req.body);
+    const loginSchema = z.object({
+      username: z.string().min(1, "Username is required"),
+      password: z.string().min(1, "Password is required"),
+    });
+    
+    const result = loginSchema.safeParse(req.body);
     if (!result.success) {
       return res
         .status(400)
-        .send("Invalid input: " + result.error.issues.map(i => i.message).join(", "));
+        .json({ message: result.error.issues.map(i => i.message).join(", ") });
     }
 
     const cb = (err: any, user: Express.User, info: IVerifyOptions) => {
