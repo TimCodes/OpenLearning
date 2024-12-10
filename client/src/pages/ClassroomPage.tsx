@@ -16,6 +16,8 @@ export default function ClassroomPage() {
   const [, params] = useRoute("/course/:id");
   const courseId = parseInt(params?.id || "0");
   const { course, isLoading } = useCourse(courseId);
+  const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
+  const { user } = useUser();
   
   // Subscribe to course notifications
   useNotifications(courseId);
@@ -31,9 +33,6 @@ export default function ClassroomPage() {
   if (!course) {
     return <div>Course not found</div>;
   }
-
-  const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
-  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-background">
