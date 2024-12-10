@@ -66,10 +66,13 @@ export function useNotifications(courseId?: number) {
         toast({
           title: notification.title,
           description: notification.message,
-          duration: 5000,
-          variant: notification.type === 'assignment' ? 'default' : 
-                  notification.type === 'announcement' ? 'secondary' : 'destructive',
-          className: notification.type === 'assignment' ? 'bg-primary text-primary-foreground' : '',
+          duration: 6000,
+          variant: notification.type === 'assignment' ? 'default' : 'destructive',
+          className: `${
+            notification.type === 'assignment' 
+              ? 'bg-primary text-primary-foreground' 
+              : 'bg-destructive text-destructive-foreground'
+          } fixed top-4 right-4 z-50`,
         });
       });
 
