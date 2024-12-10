@@ -28,7 +28,14 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
     <div className="space-y-4">
       {user?.role === "teacher" && (
         <div className="flex justify-end">
-          <Button>
+          <Button onClick={() => {
+            // TODO: Add create assignment dialog
+            sendNotification({
+              type: 'assignment',
+              title: 'New Assignment Created',
+              message: 'A new assignment has been added to the course',
+            });
+          }}>
             <Plus className="mr-2 h-4 w-4" />
             Create Assignment
           </Button>
