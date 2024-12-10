@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useCourse } from "@/hooks/use-courses";
+import { useToast } from "@/hooks/use-toast";
 
 const announcementSchema = z.object({
   message: z.string().min(1, "Announcement message is required"),
@@ -47,13 +48,28 @@ export default function AnnouncementDialog({
 
   const onSubmit = form.handleSubmit(async (data) => {
     if (course) {
-      sendNotification({
-        type: "announcement",
-        title: `Announcement from ${course.name}`,
-        message: data.message,
-      });
-      form.reset();
-      onOpenChange(false);
+      try {
+        sendNotification({
+          type: "announcement",
+          title: `New Announcement in ${course.name}`,
+          message: data.message,
+        });
+        
+        toast({
+          title: "Success",
+          description: "Announcement sent successfully",
+        });
+        
+        form.reset();
+        onOpenChange(false);
+      } catch (error) {
+        console.error('Failed to send announcement:', error);
+        toast({
+          title: "Error",
+          description: "Failed to send announcement",
+          variant: "destructive",
+        });
+      }
     }
   });
 

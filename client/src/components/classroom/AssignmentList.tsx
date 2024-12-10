@@ -7,6 +7,7 @@ import { Link } from "wouter";
 import { useUser } from "@/hooks/use-user";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useCourse } from "@/hooks/use-courses";
+import { useToast } from "@/hooks/use-toast";
 
 interface AssignmentListProps {
   courseId: number;
@@ -17,6 +18,7 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
   const { course, isLoading: courseLoading } = useCourse(courseId);
   const { user } = useUser();
   const { sendNotification } = useNotifications(courseId);
+  const { toast } = useToast();
 
   const isLoading = assignmentsLoading || courseLoading;
 
@@ -29,12 +31,20 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
   }
 
   const handleCreateAssignment = () => {
-    // TODO: Add create assignment dialog
     if (course) {
+      // Notify students about the new assignment
       sendNotification({
         type: 'assignment',
-        title: 'New Assignment Created',
-        message: `A new assignment has been added to ${course.name}`,
+        title: `New Assignment in ${course.name}`,
+        message: 'A new assignment has been posted to your class',
+      });
+      
+      // TODO: Add create assignment dialog implementation
+      // For now, we're just showing the notification
+      // The actual assignment creation will be implemented later
+      toast({
+        title: "Coming Soon",
+        description: "Assignment creation feature will be available soon!",
       });
     }
   };
