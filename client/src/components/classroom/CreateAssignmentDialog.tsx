@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { insertAssignmentSchema } from "@db/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Form,
   FormControl,
@@ -20,6 +21,18 @@ import {
 } from "@/components/ui/form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+
+const createAssignmentSchema = insertAssignmentSchema.pick({
+  title: true,
+  description: true,
+  dueDate: true,
+  points: true,
+}).transform((data) => ({
+  ...data,
+  dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+}));
+
+type FormData = z.infer<typeof createAssignmentSchema>;
 
 interface CreateAssignmentDialogProps {
   courseId: number;
@@ -32,15 +45,8 @@ export default function CreateAssignmentDialog({
   open,
   onOpenChange,
 }: CreateAssignmentDialogProps) {
-  const form = useForm({
-    resolver: zodResolver(
-      insertAssignmentSchema.pick({
-        title: true,
-        description: true,
-        dueDate: true,
-        points: true,
-      })
-    ),
+  const form = useForm<FormData>({
+    resolver: zodResolver(createAssignmentSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -53,12 +59,7 @@ export default function CreateAssignmentDialog({
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: async (data: {
-      title: string;
-      description: string;
-      dueDate: string;
-      points: number;
-    }) => {
+    mutationFn: async (data: FormData) => {
       const response = await fetch(`/api/courses/${courseId}/assignments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -85,7 +86,7 @@ export default function CreateAssignmentDialog({
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to create assignment',
         variant: "destructive",
       });
     },
@@ -146,7 +147,14 @@ export default function CreateAssignmentDialog({
                 <FormItem>
                   <FormLabel>Due Date</FormLabel>
                   <FormControl>
-                    <Input type="datetime-local" {...field} />
+                    <Input 
+                      type="datetime-local" 
+                      {...field}
+                      onChange={(e) => {
+                        const date = e.target.value;
+                        field.onChange(date || null);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +171,7 @@ export default function CreateAssignmentDialog({
                     <Input 
                       type="number" 
                       {...field} 
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
