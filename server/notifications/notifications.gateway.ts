@@ -1,38 +1,48 @@
-import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  WsResponse,
-} from '@nestjs/websockets';
 import { Server } from 'socket.io';
-import { Socket } from 'socket.io';
-import { NotificationsService } from './notifications.service';
+import { createServer } from 'http';
+import type { Express } from 'express';
 
-@WebSocketGateway({
-  cors: true,
-  namespace: '/notifications',
-})
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer()
-  server: Server;
+const clients = new Map<string, Set<number>>();
 
-  constructor(private notificationsService: NotificationsService) {}
+export function setupNotifications(app: Express, server: ReturnType<typeof createServer>) {
+  const io = new Server(server, {
+    path: '/notifications',
+    cors: {
+      origin: true,
+      credentials: true
+    }
+  });
 
-  handleConnection(client: Socket) {
-    console.log('Client connected:', client.id);
-    this.notificationsService.addClient(client);
-  }
+  io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
 
-  handleDisconnect(client: Socket) {
-    console.log('Client disconnected:', client.id);
-    this.notificationsService.removeClient(client);
-  }
+    socket.on('subscribe', ({ courseId }) => {
+      if (!clients.has(socket.id)) {
+        clients.set(socket.id, new Set());
+      }
+      clients.get(socket.id)?.add(courseId);
+      console.log(`Client ${socket.id} subscribed to course ${courseId}`);
+      socket.emit('notification', {
+        type: 'info',
+        title: 'Connected',
+        message: `You are now receiving notifications for course ${courseId}`
+      });
+    });
 
-  @SubscribeMessage('subscribe')
-  handleSubscribe(client: Socket, payload: { courseId: number }): WsResponse<string> {
-    this.notificationsService.subscribeToCourse(client, payload.courseId);
-    return { event: 'subscribed', data: `Subscribed to course ${payload.courseId}` };
-  }
+    socket.on('notify', ({ courseId, type, title, message }) => {
+      // Broadcast to all clients subscribed to this course
+      for (const [clientId, courses] of clients.entries()) {
+        if (courses.has(courseId)) {
+          io.to(clientId).emit('notification', { type, title, message });
+        }
+      }
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Client disconnected:', socket.id);
+      clients.delete(socket.id);
+    });
+  });
+
+  return io;
 }

@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { setupAuth } from "./auth";
+import { setupNotifications } from "./notifications/notifications.gateway";
 import { db } from "../db";
 import { courses, assignments, submissions } from "@db/schema";
 import { eq } from "drizzle-orm";
@@ -97,5 +98,9 @@ export function registerRoutes(app: Express) {
   });
 
   const httpServer = createServer(app);
+  
+  // Setup WebSocket notifications
+  setupNotifications(app, httpServer);
+  
   return httpServer;
 }
