@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import { insertAssignmentSchema } from "@db/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -26,10 +25,12 @@ import { useToast } from "@/hooks/use-toast";
 const createAssignmentSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  dueDate: z.string().transform((val) => {
+  dueDate: z.string().transform(val => {
     if (!val) return null;
     const date = new Date(val);
-    return isNaN(date.getTime()) ? null : date.toISOString();
+    // Validate the date is valid
+    if (isNaN(date.getTime())) return null;
+    return date;
   }),
   points: z.number().min(0, "Points must be a positive number"),
 });
@@ -67,7 +68,8 @@ export default function CreateAssignmentDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          dueDate: data.dueDate ? new Date(data.dueDate) : null,
+          // Send the date as an ISO string to the server
+          dueDate: data.dueDate instanceof Date ? data.dueDate.toISOString() : null,
         }),
         credentials: "include",
       });
@@ -154,9 +156,9 @@ export default function CreateAssignmentDialog({
                   <FormControl>
                     <Input 
                       type="datetime-local"
+                      {...field}
                       value={value || ''}
                       onChange={(e) => onChange(e.target.value)}
-                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
