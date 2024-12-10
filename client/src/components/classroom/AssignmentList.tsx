@@ -33,7 +33,7 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
             sendNotification({
               type: 'assignment',
               title: 'New Assignment Created',
-              message: 'A new assignment has been added to the course',
+              message: `A new assignment has been added to ${course.name}`,
             });
           }}>
             <Plus className="mr-2 h-4 w-4" />

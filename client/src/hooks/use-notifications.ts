@@ -67,6 +67,9 @@ export function useNotifications(courseId?: number) {
           title: notification.title,
           description: notification.message,
           duration: 5000,
+          variant: notification.type === 'assignment' ? 'default' : 
+                  notification.type === 'announcement' ? 'secondary' : 'destructive',
+          className: notification.type === 'assignment' ? 'bg-primary text-primary-foreground' : '',
         });
       });
 
