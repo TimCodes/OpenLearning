@@ -11,29 +11,22 @@ export function registerRoutes(app: Express): void {
 
   // Courses
   app.get("/api/courses", async (req, res) => {
-    const userCourses = await db.query[courses.name].findMany({
-      where: req.user?.role === "teacher" 
+    const userCourses = await db.select().from(courses).where(
+      req.user?.role === "teacher" 
         ? eq(courses.teacherId, req.user.id)
-        : undefined,
-      with: {
-        teacher: true,
-      },
-    });
+        : undefined
+    ).leftJoin(users, eq(courses.teacherId, users.id));
     res.json(userCourses);
   });
 
   app.get("/api/courses/:id", async (req, res) => {
-    const course = await db.query[courses.name].findFirst({
-      where: eq(courses.id, parseInt(req.params.id)),
-      with: {
-        teacher: true,
-        enrollments: {
-          with: {
-            student: true,
-          },
-        },
-      },
-    });
+    const [course] = await db.select()
+      .from(courses)
+      .where(eq(courses.id, parseInt(req.params.id)))
+      .leftJoin(users, eq(courses.teacherId, users.id))
+      .leftJoin(enrollments, eq(courses.id, enrollments.courseId))
+      .leftJoin(users, eq(enrollments.studentId, users.id))
+      .limit(1);
     
     if (!course) {
       return res.status(404).send("Course not found");
@@ -87,19 +80,19 @@ export function registerRoutes(app: Express): void {
   });
 
   app.get("/api/courses/:courseId/assignments", async (req, res) => {
-    const courseAssignments = await db.query[assignments.name].findMany({
-      where: eq(assignments.courseId, parseInt(req.params.courseId)),
-      with: {
-        submissions: {
-          where: req.user?.role === "student" 
+    const courseAssignments = await db.select()
+      .from(assignments)
+      .where(eq(assignments.courseId, parseInt(req.params.courseId)))
+      .leftJoin(
+        submissions,
+        and(
+          eq(assignments.id, submissions.assignmentId),
+          req.user?.role === "student"
             ? eq(submissions.studentId, req.user.id)
-            : undefined,
-          with: {
-            student: true,
-          },
-        },
-      },
-    });
+            : undefined
+        )
+      )
+      .leftJoin(users, eq(submissions.studentId, users.id));
     res.json(courseAssignments);
   });
 
