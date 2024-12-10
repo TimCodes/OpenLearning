@@ -31,7 +31,13 @@ export default function CreateCourseDialog({
   onOpenChange,
 }: CreateCourseDialogProps) {
   const form = useForm({
-    resolver: zodResolver(insertCourseSchema),
+    resolver: zodResolver(
+      insertCourseSchema.pick({
+        name: true,
+        section: true,
+        description: true,
+      })
+    ),
     defaultValues: {
       name: "",
       section: "",
@@ -152,16 +158,14 @@ export default function CreateCourseDialog({
               </Button>
               <Button 
                 type="submit" 
-                disabled={createMutation.isPending}
-                className="relative"
+                disabled={form.formState.isSubmitting}
+                className="bg-primary hover:bg-primary/90"
               >
-                {createMutation.isPending ? (
-                  <>
-                    <span className="opacity-0">Create</span>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-4 w-4 border-2 border-current border-t-transparent animate-spin rounded-full" />
-                    </div>
-                  </>
+                {form.formState.isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-current border-t-transparent animate-spin rounded-full" />
+                    Creating...
+                  </div>
                 ) : (
                   "Create"
                 )}
