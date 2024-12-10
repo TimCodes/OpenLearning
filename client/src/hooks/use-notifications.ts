@@ -10,17 +10,40 @@ export function useNotifications(courseId?: number) {
   // Initialize socket connection
   useEffect(() => {
     if (!socket) {
-      socket = io('http://localhost:5000/notifications', {
+      socket = io('/notifications', {
         withCredentials: true,
         transports: ['websocket'],
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
       });
 
       socket.on('connect', () => {
         console.log('Connected to notification server');
+        toast({
+          title: "Connected",
+          description: "You will receive real-time updates for this course",
+          duration: 3000,
+        });
       });
 
       socket.on('connect_error', (error) => {
         console.error('Failed to connect to notification server:', error);
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to notification server. Retrying...",
+          variant: "destructive",
+        });
+      });
+
+      socket.on('disconnect', (reason) => {
+        if (reason === "io server disconnect") {
+          socket?.connect(); // Reconnect if server disconnected
+        }
+        toast({
+          title: "Disconnected",
+          description: "Lost connection to notification server",
+          variant: "destructive",
+        });
       });
     }
 
@@ -30,7 +53,7 @@ export function useNotifications(courseId?: number) {
         socket = null;
       }
     };
-  }, []);
+  }, [toast]);
 
   // Subscribe to course notifications
   useEffect(() => {

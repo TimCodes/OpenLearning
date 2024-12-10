@@ -42,11 +42,11 @@ export default function AssignmentPage() {
           <div className="flex items-center space-x-4 mt-2 text-muted-foreground">
             <div className="flex items-center">
               <Calendar className="mr-2 h-4 w-4" />
-              {format(new Date(assignment.dueDate), "PPP")}
+              {assignment.dueDate ? format(new Date(assignment.dueDate), "PPP") : "No due date"}
             </div>
             <div className="flex items-center">
               <Clock className="mr-2 h-4 w-4" />
-              {format(new Date(assignment.dueDate), "p")}
+              {assignment.dueDate ? format(new Date(assignment.dueDate), "p") : "No time set"}
             </div>
           </div>
         </div>
