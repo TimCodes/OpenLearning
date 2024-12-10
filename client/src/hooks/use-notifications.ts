@@ -69,24 +69,20 @@ export function useNotifications(courseId?: number) {
       });
 
       return () => {
-        socket.off('notification');
+        socket?.off('notification');
       };
     }
   }, [courseId, toast]);
 
-  // Function to send a notification (for teachers)
-  const sendNotification = useCallback(
-    (notification: {
-      type: 'assignment' | 'announcement' | 'grade';
-      title: string;
-      message: string;
-    }) => {
-      if (socket && courseId) {
-        socket.emit('notify', { ...notification, courseId });
-      }
-    },
-    [courseId]
-  );
+  const sendNotification = useCallback((notification: {
+    type: 'assignment' | 'announcement' | 'grade';
+    title: string;
+    message: string;
+  }) => {
+    if (socket && courseId) {
+      socket.emit('notify', { ...notification, courseId });
+    }
+  }, [courseId]);
 
   return { sendNotification };
 }
