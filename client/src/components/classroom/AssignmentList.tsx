@@ -28,20 +28,22 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
     );
   }
 
+  const handleCreateAssignment = () => {
+    // TODO: Add create assignment dialog
+    if (course) {
+      sendNotification({
+        type: 'assignment',
+        title: 'New Assignment Created',
+        message: `A new assignment has been added to ${course.name}`,
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       {user?.role === "teacher" && (
         <div className="flex justify-end">
-          <Button onClick={() => {
-            // TODO: Add create assignment dialog
-            if (course) {
-              sendNotification({
-                type: 'assignment',
-                title: 'New Assignment Created',
-                message: `A new assignment has been added to ${course.name}`,
-              });
-            }
-          }}>
+          <Button onClick={handleCreateAssignment}>
             <Plus className="mr-2 h-4 w-4" />
             Create Assignment
           </Button>
@@ -51,28 +53,30 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
       <div className="space-y-4">
         {assignments?.map((assignment) => (
           <Link key={assignment.id} href={`/assignment/${assignment.id}`}>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg">{assignment.title}</CardTitle>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Due {format(new Date(assignment.dueDate), "PPP")}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {assignment.description}
-                </p>
-              </CardContent>
-            </Card>
+            <a className="block">
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-lg">{assignment.title}</CardTitle>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Due {assignment.dueDate ? format(new Date(assignment.dueDate), "PPP") : "No due date"}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {assignment.description || "No description provided"}
+                  </p>
+                </CardContent>
+              </Card>
+            </a>
           </Link>
         ))}
 
-        {assignments?.length === 0 && (
+        {(!assignments || assignments.length === 0) && (
           <div className="text-center py-12">
             <h3 className="text-lg font-medium">No assignments yet</h3>
             <p className="text-muted-foreground mt-1">
-              Check back later for new assignments
+              {user?.role === "teacher" ? "Create an assignment to get started" : "Check back later for new assignments"}
             </p>
           </div>
         )}

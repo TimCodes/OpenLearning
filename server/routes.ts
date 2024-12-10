@@ -59,6 +59,16 @@ export function registerRoutes(app: Express) {
   app.get("/api/courses/:courseId/assignments", async (req, res) => {
     const courseAssignments = await db.query.assignments.findMany({
       where: eq(assignments.courseId, parseInt(req.params.courseId)),
+      with: {
+        submissions: {
+          where: req.user?.role === "student" 
+            ? eq(submissions.studentId, req.user.id)
+            : undefined,
+          with: {
+            student: true,
+          },
+        },
+      },
     });
     res.json(courseAssignments);
   });
