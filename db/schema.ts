@@ -72,7 +72,21 @@ export const assignmentsRelations = relations(assignments, ({ one, many }) => ({
     fields: [assignments.courseId],
     references: [courses.id],
   }),
-  submissions: many(submissions),
+  submissions: many(submissions, {
+    fields: [assignments.id],
+    references: [submissions.assignmentId],
+  }),
+}));
+
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  assignment: one(assignments, {
+    fields: [submissions.assignmentId],
+    references: [assignments.id],
+  }),
+  student: one(users, {
+    fields: [submissions.studentId],
+    references: [users.id],
+  }),
 }));
 
 // Schemas

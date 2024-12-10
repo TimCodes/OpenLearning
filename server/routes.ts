@@ -79,6 +79,9 @@ export function registerRoutes(app: Express): void {
       with: {
         course: true,
         submissions: {
+          with: {
+            student: true,
+          },
           where: req.user?.role === "student" 
             ? eq(submissions.studentId, req.user.id)
             : undefined,
