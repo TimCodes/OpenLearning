@@ -4,12 +4,15 @@ import {
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  WsResponse,
 } from '@nestjs/websockets';
-import { Server, WebSocket } from 'ws';
+import { Server } from 'socket.io';
+import { Socket } from 'socket.io';
 import { NotificationsService } from './notifications.service';
 
 @WebSocketGateway({
-  path: '/notifications',
+  cors: true,
+  namespace: '/notifications',
 })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -17,18 +20,19 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 
   constructor(private notificationsService: NotificationsService) {}
 
-  handleConnection(client: WebSocket) {
-    // Store client connection
+  handleConnection(client: Socket) {
+    console.log('Client connected:', client.id);
     this.notificationsService.addClient(client);
   }
 
-  handleDisconnect(client: WebSocket) {
-    // Remove client connection
+  handleDisconnect(client: Socket) {
+    console.log('Client disconnected:', client.id);
     this.notificationsService.removeClient(client);
   }
 
   @SubscribeMessage('subscribe')
-  handleSubscribe(client: WebSocket, payload: { courseId: number }) {
+  handleSubscribe(client: Socket, payload: { courseId: number }): WsResponse<string> {
     this.notificationsService.subscribeToCourse(client, payload.courseId);
+    return { event: 'subscribed', data: `Subscribed to course ${payload.courseId}` };
   }
 }
