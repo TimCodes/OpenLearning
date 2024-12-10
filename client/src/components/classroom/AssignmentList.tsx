@@ -5,9 +5,7 @@ import { Calendar, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useUser } from "@/hooks/use-user";
-import { useNotifications } from "@/hooks/use-notifications";
 import { useCourse } from "@/hooks/use-courses";
-import { useToast } from "@/hooks/use-toast";
 import CreateAssignmentDialog from "./CreateAssignmentDialog";
 import { useState } from "react";
 
@@ -16,6 +14,7 @@ interface AssignmentListProps {
 }
 
 export default function AssignmentList({ courseId }: AssignmentListProps) {
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { assignments, isLoading: assignmentsLoading } = useAssignments(courseId);
   const { course, isLoading: courseLoading } = useCourse(courseId);
   const { user } = useUser();
@@ -29,17 +28,11 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
     );
   }
 
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-
-  const handleCreateAssignment = () => {
-    setShowCreateDialog(true);
-  };
-
   return (
     <div className="space-y-4">
       {user?.role === "teacher" && (
         <div className="flex justify-end">
-          <Button onClick={handleCreateAssignment}>
+          <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Create Assignment
           </Button>
