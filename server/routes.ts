@@ -56,6 +56,20 @@ export function registerRoutes(app: Express): void {
   });
 
   // Assignments
+  app.post("/api/courses/:courseId/assignments", async (req, res) => {
+    if (!req.user || req.user.role !== "teacher") {
+      return res.status(403).send("Only teachers can create assignments");
+    }
+
+    const courseId = parseInt(req.params.courseId);
+    const [assignment] = await db.insert(assignments).values({
+      ...req.body,
+      courseId,
+    }).returning();
+
+    res.json(assignment);
+  });
+
   app.get("/api/courses/:courseId/assignments", async (req, res) => {
     const courseAssignments = await db.query.assignments.findMany({
       where: eq(assignments.courseId, parseInt(req.params.courseId)),

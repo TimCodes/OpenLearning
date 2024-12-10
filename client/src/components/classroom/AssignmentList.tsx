@@ -8,6 +8,7 @@ import { useUser } from "@/hooks/use-user";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useCourse } from "@/hooks/use-courses";
 import { useToast } from "@/hooks/use-toast";
+import CreateAssignmentDialog from "./CreateAssignmentDialog";
 
 interface AssignmentListProps {
   courseId: number;
@@ -30,23 +31,10 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
     );
   }
 
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
   const handleCreateAssignment = () => {
-    if (course) {
-      // Notify students about the new assignment
-      sendNotification({
-        type: 'assignment',
-        title: `New Assignment in ${course.name}`,
-        message: 'A new assignment has been posted to your class',
-      });
-      
-      // TODO: Add create assignment dialog implementation
-      // For now, we're just showing the notification
-      // The actual assignment creation will be implemented later
-      toast({
-        title: "Coming Soon",
-        description: "Assignment creation feature will be available soon!",
-      });
-    }
+    setShowCreateDialog(true);
   };
 
   return (
@@ -93,6 +81,12 @@ export default function AssignmentList({ courseId }: AssignmentListProps) {
           </div>
         )}
       </div>
+
+      <CreateAssignmentDialog
+        courseId={courseId}
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+      />
     </div>
   );
 }
