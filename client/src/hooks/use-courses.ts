@@ -2,13 +2,25 @@ import { useQuery } from "@tanstack/react-query";
 import type { Course } from "@db/schema";
 
 export function useCourses() {
-  return useQuery<Course[]>({
+  const { data: courses, isLoading, error } = useQuery<Course[]>({
     queryKey: ["/api/courses"],
   });
+
+  return {
+    courses,
+    isLoading,
+    error
+  };
 }
 
 export function useCourse(id: number) {
-  return useQuery<Course>({
+  const { data: course, isLoading, error } = useQuery<Course>({
     queryKey: [`/api/courses/${id}`],
   });
+
+  return {
+    course,
+    isLoading,
+    error
+  };
 }

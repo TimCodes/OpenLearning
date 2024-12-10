@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 export default function DashboardPage() {
   const { user } = useUser();
   const { courses, isLoading } = useCourses();
+  console.log('Dashboard courses:', courses);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   return (
